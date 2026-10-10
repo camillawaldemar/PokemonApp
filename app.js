@@ -104,6 +104,15 @@
   const KIND_WORD = { mega: "mega evolution", primal: "primal reversion", form: "alternate form" };
   const sign = n => (n > 0 ? "+" : "") + n;
 
+  // Stat names go lower case inside a sentence, except HP.
+  const low = s => (s === "HP" ? s : s.toLowerCase());
+
+  // "attack up 20, defence up 20 and speed down 40"
+  function joinAnd(list) {
+    if (list.length < 2) return list.join("");
+    return list.slice(0, -1).join(", ") + " and " + list[list.length - 1];
+  }
+
   /* ------------------------------------------------------------- images
      Artwork comes from PokeAPI at runtime rather than from this repository.
      One request per species covers both the large artwork and the small
@@ -282,7 +291,7 @@
           : "A different shape rather than a stronger one.",
         body: pretty(form) + " is worth " + sign(c.total) + " base stat points against ordinary " +
           pretty(base) + (c.drops.length
-            ? ", though " + c.drops[0].stat.toLowerCase() + " falls by " + Math.abs(c.drops[0].d) + "."
+            ? ", though " + low(c.drops[0].stat) + " falls by " + Math.abs(c.drops[0].d) + "."
             : ", with nothing given up.") +
           " It lasts for the battle rather than permanently, so it is a separate question from evolving." +
           (sisters.length > 1
@@ -291,9 +300,10 @@
       };
     }
 
-    const moved = (c.gains.length ? c.gains[0].stat.toLowerCase() + " up " + c.gains[0].d : "") +
-      (c.gains.length && c.drops.length ? ", " : "") +
-      (c.drops.length ? c.drops[0].stat.toLowerCase() + " down " + Math.abs(c.drops[0].d) : "");
+    // Every stat that moves, not just the largest, so Aegislash Blade reads as the full swap.
+    const moved = joinAnd(
+      c.gains.map(g => low(g.stat) + " up " + g.d).concat(
+        c.drops.map(x => low(x.stat) + " down " + Math.abs(x.d))));
 
     let account;
     if (c.total !== 0) {
@@ -356,7 +366,7 @@
       const totals = options.map(bst);
       const spread = Math.max.apply(null, totals) - Math.min.apply(null, totals);
       const shape = spread === 0
-        ? "All " + options.length + " land on the same " + totals[0] +
+        ? (options.length === 2 ? "Both" : "All " + options.length) + " land on the same " + totals[0] +
           " point total, so this is a question of shape rather than size."
         : "They are not equivalent: " + spread +
           " base stat points separate the strongest from the weakest.";
@@ -365,7 +375,12 @@
         head: "Yes, but the choice matters more than the timing.",
         body: pretty(mon) + " can become " + listNames(options) + ". " + shape +
           " For " + PRIORITIES[priority].label.toLowerCase() + ", " + pretty(best) +
-          " is the pick. Once you evolve, the others are off the table."
+          " is the pick." +
+          // Nincada is the one fork where you end up with both.
+          (mon.name === "nincada"
+            ? " Nincada works differently, though: evolving it gives you Ninjask, and Shedinja appears as well" +
+              " if you have a free party slot and a spare Poké Ball."
+            : " Once you evolve, the others are off the table.")
       };
     }
 
@@ -381,8 +396,9 @@
 
     if (gain === 0) {
       const shift = (c.gains.length && c.drops.length)
-        ? ", redistributed: " + c.gains[0].stat.toLowerCase() + " goes up " + c.gains[0].d +
-          ", " + c.drops[0].stat.toLowerCase() + " drops " + Math.abs(c.drops[0].d)
+        ? ", redistributed: " + joinAnd(
+            c.gains.map(g => low(g.stat) + " goes up " + g.d).concat(
+              c.drops.map(x => low(x.stat) + " drops " + Math.abs(x.d))))
         : "";
       return {
         tag: "Even trade",
@@ -396,8 +412,8 @@
       const worst = c.drops[0];
       return {
         tag: "Yes, with a catch",
-        head: "Worth it, as long as you can spare the " + worst.stat.toLowerCase() + ".",
-        body: "The total climbs " + gain + " points, but " + worst.stat.toLowerCase() +
+        head: "Worth it, as long as you can spare the " + low(worst.stat) + ".",
+        body: "The total climbs " + gain + " points, but " + low(worst.stat) +
           " falls by " + Math.abs(worst.d) + ". " +
           (worst.i === 5
             ? "Losing speed changes who moves first, which matters more than the number suggests."
@@ -445,7 +461,7 @@
     for (let i = 0; i < 6; i++) {
       const top = Math.max.apply(null, siblings.map(s => s.stats[i]));
       if (option.stats[i] === top && siblings.filter(s => s.stats[i] === top).length === 1) {
-        best.push(STAT_NAMES[i].toLowerCase());
+        best.push(low(STAT_NAMES[i]));
       }
     }
     if (best.length) return "Best " + best.slice(0, 2).join(" and ") + " of the group";
@@ -550,14 +566,15 @@
         a.replace(" (hidden)", "") !== other.hiddenAbility)
       : [];
     return '<dl class="facts">' +
-      '<div class="fact"><dt>Size after ' + (verb || "evolving") + '</dt><dd>' + m(p.height, p.weight) +
+      '<div class="fact"><dt>' + (other ? "Size after " + (verb || "evolving") : "Size") + '</dt><dd>' +
+      '<span class="plain">' + m(p.height, p.weight) + "</span>" +
       (other ? ' <span class="thin">(from ' + m(other.height, other.weight) + ")</span>" : "") + "</dd></div>" +
-      '<div class="fact"><dt>Abilities</dt><dd>' + (abil.join(", ") || "none listed") +
+      '<div class="fact"><dt>Abilities</dt><dd>' + (abil.join(", ") || '<span class="plain">none listed</span>') +
       (gained.length ? ' <span class="thin">' + gained.length + " new</span>" : "") + "</dd></div>" +
-      '<div class="fact"><dt>Base experience</dt><dd>' + (p.baseExp == null ? "not listed" : p.baseExp) +
+      '<div class="fact"><dt>Base experience</dt><dd>' + (p.baseExp == null ? '<span class="plain">not listed</span>' : p.baseExp) +
       (other && other.baseExp != null && p.baseExp != null
         ? ' <span class="thin">(' + sign(p.baseExp - other.baseExp) + ")</span>" : "") + "</dd></div>" +
-      '<div class="fact"><dt>Egg groups</dt><dd>' + (p.eggGroups.join(", ") || "unknown") + "</dd></div>" +
+      '<div class="fact"><dt>Egg groups</dt><dd>' + (p.eggGroups.join(", ") || '<span class="plain">unknown</span>') + "</dd></div>" +
       "</dl>";
   }
 

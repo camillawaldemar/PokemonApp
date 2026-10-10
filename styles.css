@@ -455,7 +455,7 @@ button, input { font: inherit; color: inherit; }
   text-shadow: 0 1px 1px rgba(0, 0, 0, .28);
 }
 
-.chip small { font-weight: 400; opacity: .85; }
+.chip small { font-weight: 400; opacity: .85; text-transform: none; }
 
 .match-none { color: var(--muted); font-size: .875rem; }
 
@@ -495,6 +495,7 @@ button, input { font: inherit; color: inherit; }
 .fact dt { color: var(--muted); font-size: .8125rem; }
 .fact dd { margin: .125rem 0 0; text-transform: capitalize; }
 .fact dd .thin { color: var(--muted); text-transform: none; }
+.fact dd .plain { text-transform: none; }
 
 /* ---------- colophon ---------- */
 
