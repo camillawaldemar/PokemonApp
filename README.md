@@ -3,7 +3,7 @@
 A single-page site that answers one question. You pick a Pokémon, it tells you what evolving
 costs you and what it buys you, and gives a straight verdict.
 
-Live site: `https://USERNAME.github.io/REPO/`
+Live site: [camillawaldemar.github.io/PokemonApp](https://camillawaldemar.github.io/PokemonApp/)
 
 ## What it does
 
@@ -31,8 +31,8 @@ the page shows:
 
 Pokémon that cannot evolve get a straight answer too, plus where they stand against the rest.
 Forms are labelled for what they are: a mega evolution, a primal reversion, or an alternate form.
-Aegislash Blade is described as the same total with 100 points moved from defence to attack, and
-the cosplay Pikachu as cosmetic, because that is what the numbers say.
+Aegislash Blade is described as the same total with attack and sp. attack up 100 and defence and
+sp. defence down 100, and the cosplay Pikachu as cosmetic, because that is what the numbers say.
 
 ## How the verdict is decided
 
@@ -59,6 +59,7 @@ that eight equal-total Eeveelutions still rank sensibly.
 | `data.js` | Generated from the CSV, the only data the page loads. Every row is kept and tagged as a species, mega, primal or form |
 | `build_data.py` | Regenerates `data.js` from `pokemon.csv` |
 | `pokemon.csv` | Source data, unchanged |
+| `SUBMISSION.md` | Time and cost statement for the hand-in |
 
 No build step and no dependencies. At runtime the page talks to PokéAPI for images and to Google
 Fonts for two webfaces. Nothing else.
@@ -118,14 +119,14 @@ git init
 git add .
 git commit -m "Pokémon evolution decision tool"
 git branch -M main
-git remote add origin https://github.com/USERNAME/REPO.git
+git remote add origin https://github.com/camillawaldemar/PokemonApp.git
 git push -u origin main
 ```
 
 Then in the repository: **Settings → Pages → Source: Deploy from a branch → Branch: `main`,
-folder: `/ (root)` → Save**. The site appears at `https://USERNAME.github.io/REPO/` within a
-couple of minutes.
+folder: `/ (root)` → Save**. The site appears at `https://camillawaldemar.github.io/PokemonApp/`
+within a couple of minutes.
 
 Without a terminal: create a public repository on github.com, use **Add file → Upload files**,
-drag in the seven files, commit, then follow the same Pages steps. The whole repository is under
-400 KB, since no images are stored in it.
+drag in the eight files listed above, commit, then follow the same Pages steps. The whole
+repository is under 500 KB, since no images are stored in it.
